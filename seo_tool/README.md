@@ -1,6 +1,6 @@
 # Jasleen — SEO Article Generation Tool
 
-A step-by-step web tool that takes you from a keyword to a fully optimised, publish-ready SEO article — powered by Claude AI and built on DIAL Agents best practice guides.
+A step-by-step web tool that takes you from a keyword to a fully optimised, publish-ready SEO article — powered by Claude AI and built on SEO best practice guides.
 
 ## Features
 
