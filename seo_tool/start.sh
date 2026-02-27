@@ -1,13 +1,13 @@
 #!/bin/bash
 # ─────────────────────────────────────────────
-# DIAL Agents — SEO Article Tool Launcher
+# Jasleen — SEO Article Tool Launcher
 # ─────────────────────────────────────────────
 
 cd "$(dirname "$0")"
 
 echo ""
 echo "════════════════════════════════════════════════"
-echo "  DIAL Agents — SEO Article Generation Tool"
+echo "  Jasleen — SEO Article Generation Tool"
 echo "════════════════════════════════════════════════"
 
 # Check for API key
