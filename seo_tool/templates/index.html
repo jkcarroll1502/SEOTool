@@ -1,0 +1,1267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SEO Article Tool — DIAL Agents</title>
+  <style>
+    /* ── Reset & Base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --surface2: #22263a;
+      --border: #2e3350;
+      --accent: #6c63ff;
+      --accent2: #9b8fff;
+      --green: #22c55e;
+      --red: #ef4444;
+      --amber: #f59e0b;
+      --text: #e8eaf6;
+      --text-muted: #8b90b8;
+      --radius: 12px;
+      --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    html { font-size: 15px; }
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Layout ── */
+    .app {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      min-height: 100vh;
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 28px 20px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .logo-icon {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+    .logo-text { font-size: 15px; font-weight: 700; letter-spacing: -0.3px; }
+    .logo-sub { font-size: 11px; color: var(--text-muted); }
+
+    .steps-nav { display: flex; flex-direction: column; gap: 6px; }
+    .steps-nav h3 { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 4px; }
+    .step-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.15s;
+      border: 1px solid transparent;
+    }
+    .step-item:hover { background: var(--surface2); }
+    .step-item.active { background: rgba(108, 99, 255, 0.12); border-color: rgba(108, 99, 255, 0.3); }
+    .step-item.completed .step-num { background: var(--green); }
+    .step-num {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      flex-shrink: 0;
+      transition: background 0.2s;
+    }
+    .step-item.active .step-num { background: var(--accent); border-color: var(--accent); }
+    .step-label { font-size: 13px; font-weight: 500; }
+    .step-desc { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+
+    .sidebar-footer {
+      margin-top: auto;
+      font-size: 11px;
+      color: var(--text-muted);
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── Main ── */
+    .main {
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+
+    .topbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .topbar-title { font-size: 16px; font-weight: 600; }
+    .topbar-badge {
+      font-size: 11px;
+      background: rgba(108,99,255,0.15);
+      color: var(--accent2);
+      border: 1px solid rgba(108,99,255,0.3);
+      padding: 4px 12px;
+      border-radius: 20px;
+    }
+
+    .content { padding: 32px; max-width: 900px; }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px;
+      margin-bottom: 24px;
+    }
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .card-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      background: rgba(108,99,255,0.12);
+    }
+    .card-title { font-size: 17px; font-weight: 600; }
+    .card-subtitle { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+
+    /* ── Form ── */
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group.full { grid-column: 1 / -1; }
+    label { font-size: 13px; font-weight: 500; color: var(--text-muted); }
+    input, textarea, select {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.15s;
+      width: 100%;
+    }
+    input:focus, textarea:focus, select:focus { border-color: var(--accent); }
+    input::placeholder, textarea::placeholder { color: var(--text-muted); }
+    textarea { resize: vertical; min-height: 80px; }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 22px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.15s;
+      font-family: var(--font);
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+    .btn-primary:hover { background: var(--accent2); }
+    .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-secondary {
+      background: var(--surface2);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-secondary:hover { border-color: var(--accent); color: var(--accent2); }
+    .btn-success {
+      background: rgba(34,197,94,0.15);
+      color: var(--green);
+      border: 1px solid rgba(34,197,94,0.3);
+    }
+    .btn-success:hover { background: rgba(34,197,94,0.25); }
+    .btn-sm { padding: 7px 14px; font-size: 12px; }
+
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    /* ── Output area ── */
+    .output-box {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 18px;
+      font-size: 13.5px;
+      line-height: 1.75;
+      white-space: pre-wrap;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      min-height: 120px;
+      max-height: 500px;
+      overflow-y: auto;
+      color: var(--text);
+      display: none;
+    }
+    .output-box.visible { display: block; }
+    .output-box.streaming { border-color: var(--accent); }
+
+    /* Rendered markdown output */
+    .rendered-output {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 24px 28px;
+      min-height: 120px;
+      overflow-y: auto;
+      display: none;
+    }
+    .rendered-output.visible { display: block; }
+    .rendered-output h1 { font-size: 22px; margin-bottom: 14px; color: #fff; }
+    .rendered-output h2 { font-size: 18px; margin: 20px 0 10px; color: var(--accent2); border-bottom: 1px solid var(--border); padding-bottom: 6px; }
+    .rendered-output h3 { font-size: 15px; margin: 16px 0 8px; color: var(--text); }
+    .rendered-output h4 { font-size: 14px; margin: 12px 0 6px; color: var(--text-muted); }
+    .rendered-output p { margin-bottom: 10px; line-height: 1.7; }
+    .rendered-output ul, .rendered-output ol { margin: 8px 0 12px 20px; }
+    .rendered-output li { margin-bottom: 4px; }
+    .rendered-output strong { color: #fff; }
+    .rendered-output table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13px; }
+    .rendered-output th { background: var(--surface); padding: 8px 12px; text-align: left; border: 1px solid var(--border); color: var(--accent2); }
+    .rendered-output td { padding: 8px 12px; border: 1px solid var(--border); }
+    .rendered-output code { background: rgba(108,99,255,0.1); padding: 2px 6px; border-radius: 4px; font-size: 12px; color: var(--accent2); }
+
+    /* ── Article viewer ── */
+    .article-viewer {
+      background: #fff;
+      color: #111;
+      border-radius: var(--radius);
+      padding: 40px;
+      line-height: 1.8;
+      display: none;
+    }
+    .article-viewer.visible { display: block; }
+    .article-viewer h1 { font-size: 26px; margin-bottom: 16px; color: #111; }
+    .article-viewer h2 { font-size: 20px; margin: 24px 0 12px; color: #111; }
+    .article-viewer h3 { font-size: 17px; margin: 18px 0 8px; color: #333; }
+    .article-viewer h4 { font-size: 15px; margin: 14px 0 6px; color: #555; }
+    .article-viewer p { margin-bottom: 14px; color: #222; }
+    .article-viewer ul, .article-viewer ol { margin: 8px 0 14px 24px; }
+    .article-viewer li { margin-bottom: 6px; color: #222; }
+    .article-viewer strong { color: #000; }
+
+    /* ── Meta pills ── */
+    .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+    .meta-pill {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 16px;
+    }
+    .meta-pill.full { grid-column: 1 / -1; }
+    .meta-pill-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+    .meta-pill-value { font-size: 13px; font-weight: 500; word-break: break-word; }
+    .meta-pill-value.good { color: var(--green); }
+    .meta-pill-value.warn { color: var(--amber); }
+
+    /* ── Status/loader ── */
+    .status-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin-bottom: 12px;
+      display: none;
+    }
+    .status-bar.visible { display: flex; }
+    .status-bar.loading { background: rgba(108,99,255,0.1); border: 1px solid rgba(108,99,255,0.2); color: var(--accent2); }
+    .status-bar.success { background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.2); color: var(--green); }
+    .status-bar.error { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2); color: var(--red); }
+
+    .spinner {
+      width: 14px;
+      height: 14px;
+      border: 2px solid currentColor;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      flex-shrink: 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Refine panel ── */
+    .refine-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .refine-btn {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      color: var(--text);
+      text-align: left;
+      transition: all 0.15s;
+      font-family: var(--font);
+    }
+    .refine-btn:hover { border-color: var(--accent); color: var(--accent2); background: rgba(108,99,255,0.06); }
+    .refine-btn .refine-icon { font-size: 16px; display: block; margin-bottom: 4px; }
+
+    /* ── Save panel ── */
+    .save-info {
+      background: rgba(34,197,94,0.07);
+      border: 1px solid rgba(34,197,94,0.2);
+      border-radius: 8px;
+      padding: 16px 20px;
+      display: none;
+    }
+    .save-info.visible { display: block; }
+    .save-path { font-family: monospace; font-size: 12px; color: var(--green); margin-top: 4px; }
+
+    /* ── Checklist ── */
+    .checklist { display: flex; flex-direction: column; gap: 8px; }
+    .check-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+    }
+    .check-item input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    /* ── Tab switcher ── */
+    .tabs { display: flex; gap: 6px; margin-bottom: 16px; }
+    .tab {
+      padding: 6px 16px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      color: var(--text-muted);
+      transition: all 0.15s;
+    }
+    .tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+    /* ── Progress bar ── */
+    .progress-bar {
+      height: 3px;
+      background: var(--border);
+      border-radius: 99px;
+      overflow: hidden;
+      margin-bottom: 24px;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: 99px;
+      transition: width 0.4s ease;
+    }
+
+    /* ── Hidden ── */
+    .hidden { display: none !important; }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-icon">🔍</div>
+      <div>
+        <div class="logo-text">DIAL Agents</div>
+        <div class="logo-sub">SEO Article Tool</div>
+      </div>
+    </div>
+
+    <nav class="steps-nav">
+      <h3>Workflow</h3>
+      <div class="step-item active" data-step="1" onclick="goToStep(1)">
+        <div class="step-num">1</div>
+        <div>
+          <div class="step-label">Keyword Input</div>
+          <div class="step-desc">Topic & context</div>
+        </div>
+      </div>
+      <div class="step-item" data-step="2" onclick="goToStep(2)">
+        <div class="step-num">2</div>
+        <div>
+          <div class="step-label">Keyword Research</div>
+          <div class="step-desc">LSI & semantic keywords</div>
+        </div>
+      </div>
+      <div class="step-item" data-step="3" onclick="goToStep(3)">
+        <div class="step-num">3</div>
+        <div>
+          <div class="step-label">Content Brief</div>
+          <div class="step-desc">Angle & article outline</div>
+        </div>
+      </div>
+      <div class="step-item" data-step="4" onclick="goToStep(4)">
+        <div class="step-num">4</div>
+        <div>
+          <div class="step-label">Generate Article</div>
+          <div class="step-desc">Full SEO article</div>
+        </div>
+      </div>
+      <div class="step-item" data-step="5" onclick="goToStep(5)">
+        <div class="step-num">5</div>
+        <div>
+          <div class="step-label">Refine & Review</div>
+          <div class="step-desc">Tweak & improve</div>
+        </div>
+      </div>
+      <div class="step-item" data-step="6" onclick="goToStep(6)">
+        <div class="step-num">6</div>
+        <div>
+          <div class="step-label">Save & Export</div>
+          <div class="step-desc">Download outputs</div>
+        </div>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      Powered by Claude Sonnet 4.6<br>
+      Based on your DIAL Agents best practice guides
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+    <div class="topbar">
+      <div class="topbar-title" id="topbar-title">Step 1: Enter Your Keyword</div>
+      <div class="topbar-badge" id="topbar-badge">Getting Started</div>
+    </div>
+
+    <div class="content">
+
+      <!-- Progress -->
+      <div class="progress-bar">
+        <div class="progress-fill" id="progress-fill" style="width: 16%"></div>
+      </div>
+
+      <!-- ══════════════════════════════════════ -->
+      <!-- STEP 1: Keyword Input                 -->
+      <!-- ══════════════════════════════════════ -->
+      <div id="step-1">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon">🎯</div>
+            <div>
+              <div class="card-title">Keyword & Context</div>
+              <div class="card-subtitle">Tell us about the article you want to create</div>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group full">
+              <label>Primary Keyword *</label>
+              <input type="text" id="primary-keyword" placeholder="e.g. best CRM software for small business" />
+            </div>
+            <div class="form-group">
+              <label>Brand / Website Name</label>
+              <input type="text" id="brand-name" placeholder="e.g. Acme Marketing" />
+            </div>
+            <div class="form-group">
+              <label>Industry / Niche</label>
+              <input type="text" id="industry" placeholder="e.g. SaaS, fitness, finance" />
+            </div>
+            <div class="form-group">
+              <label>Target Audience</label>
+              <input type="text" id="target-audience" placeholder="e.g. small business owners, beginners" />
+            </div>
+            <div class="form-group">
+              <label>Tone of Voice</label>
+              <select id="tone">
+                <option value="expert, informative, conversational">Expert & Conversational</option>
+                <option value="professional and authoritative">Professional & Authoritative</option>
+                <option value="friendly and approachable">Friendly & Approachable</option>
+                <option value="educational and in-depth">Educational & In-Depth</option>
+                <option value="casual and engaging">Casual & Engaging</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="btn-row">
+            <button class="btn btn-primary" onclick="startKeywordResearch()">
+              Next: Keyword Research →
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════ -->
+      <!-- STEP 2: Keyword Research              -->
+      <!-- ══════════════════════════════════════ -->
+      <div id="step-2" class="hidden">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon">🔬</div>
+            <div>
+              <div class="card-title">LSI & Semantic Keyword Research</div>
+              <div class="card-subtitle">Generating supporting keywords to boost topical relevance</div>
+            </div>
+          </div>
+
+          <div class="status-bar" id="kw-status">
+            <div class="spinner"></div>
+            <span>Researching keywords...</span>
+          </div>
+
+          <div class="tabs" id="kw-tabs" style="display:none">
+            <div class="tab active" onclick="switchTab('kw', 'rendered')">Formatted</div>
+            <div class="tab" onclick="switchTab('kw', 'raw')">Raw Output</div>
+          </div>
+          <div class="rendered-output" id="kw-rendered"></div>
+          <div class="output-box" id="kw-raw"></div>
+
+          <div class="btn-row" id="kw-actions" style="display:none">
+            <button class="btn btn-primary" onclick="generateBrief()">Next: Content Brief →</button>
+            <button class="btn btn-secondary" onclick="regenerateKeywords()">↺ Regenerate</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════ -->
+      <!-- STEP 3: Content Brief                 -->
+      <!-- ══════════════════════════════════════ -->
+      <div id="step-3" class="hidden">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon">📋</div>
+            <div>
+              <div class="card-title">Content Angle & Article Brief</div>
+              <div class="card-subtitle">Building your article structure following your best practice guides</div>
+            </div>
+          </div>
+
+          <div class="status-bar" id="brief-status">
+            <div class="spinner"></div>
+            <span>Generating content brief...</span>
+          </div>
+
+          <div class="tabs" id="brief-tabs" style="display:none">
+            <div class="tab active" onclick="switchTab('brief', 'rendered')">Formatted</div>
+            <div class="tab" onclick="switchTab('brief', 'raw')">Raw Output</div>
+          </div>
+          <div class="rendered-output" id="brief-rendered"></div>
+          <div class="output-box" id="brief-raw"></div>
+
+          <div id="brief-actions" style="display:none">
+            <div class="form-group" style="margin-top: 16px;">
+              <label>Any adjustments or notes before generating the article? (optional)</label>
+              <textarea id="user-notes" placeholder="e.g. Include a section on pricing, avoid technical jargon, mention competitor X..."></textarea>
+            </div>
+            <div class="btn-row">
+              <button class="btn btn-primary" onclick="generateArticle()">Next: Generate Full Article →</button>
+              <button class="btn btn-secondary" onclick="regenerateBrief()">↺ Regenerate Brief</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════ -->
+      <!-- STEP 4: Generate Article              -->
+      <!-- ══════════════════════════════════════ -->
+      <div id="step-4" class="hidden">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon">✍️</div>
+            <div>
+              <div class="card-title">Full SEO Article</div>
+              <div class="card-subtitle">Writing your complete, publish-ready article</div>
+            </div>
+          </div>
+
+          <div class="status-bar" id="article-status">
+            <div class="spinner"></div>
+            <span>Writing your SEO article — this may take 30–60 seconds...</span>
+          </div>
+
+          <!-- Meta summary (shown after generation) -->
+          <div id="article-meta" class="hidden">
+            <div class="meta-grid">
+              <div class="meta-pill">
+                <div class="meta-pill-label">Title Tag</div>
+                <div class="meta-pill-value" id="meta-title"></div>
+              </div>
+              <div class="meta-pill">
+                <div class="meta-pill-label">Title Tag Length</div>
+                <div class="meta-pill-value" id="meta-title-len"></div>
+              </div>
+              <div class="meta-pill full">
+                <div class="meta-pill-label">Meta Description</div>
+                <div class="meta-pill-value" id="meta-desc"></div>
+              </div>
+              <div class="meta-pill full">
+                <div class="meta-pill-label">Keywords Used</div>
+                <div class="meta-pill-value" id="meta-keywords"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="tabs" id="article-tabs" style="display:none">
+            <div class="tab active" onclick="switchTab('article', 'preview')">Article Preview</div>
+            <div class="tab" onclick="switchTab('article', 'raw')">Raw Output</div>
+          </div>
+          <div class="article-viewer" id="article-preview"></div>
+          <div class="output-box" id="article-raw"></div>
+
+          <div class="btn-row" id="article-actions" style="display:none">
+            <button class="btn btn-primary" onclick="goToStep(5)">Next: Refine & Review →</button>
+            <button class="btn btn-secondary" onclick="regenerateArticle()">↺ Regenerate</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════ -->
+      <!-- STEP 5: Refine                        -->
+      <!-- ══════════════════════════════════════ -->
+      <div id="step-5" class="hidden">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon">🛠</div>
+            <div>
+              <div class="card-title">Refine & Review</div>
+              <div class="card-subtitle">Tweak your article before exporting</div>
+            </div>
+          </div>
+
+          <p style="font-size:13px; color: var(--text-muted); margin-bottom: 16px;">
+            Choose a quick refinement or write a custom instruction:
+          </p>
+
+          <div class="refine-grid">
+            <button class="refine-btn" onclick="quickRefine('Rewrite the introduction to be more compelling and emotionally engaging. Use a stronger hook in the first two sentences.')">
+              <span class="refine-icon">✨</span>Stronger Intro
+            </button>
+            <button class="refine-btn" onclick="quickRefine('Simplify the writing throughout to improve Flesch-Kincaid readability. Aim for score 55-60. Use shorter sentences and simpler words.')">
+              <span class="refine-icon">📖</span>Improve Readability
+            </button>
+            <button class="refine-btn" onclick="quickRefine('Make the tone more conversational and friendly throughout. Reduce jargon and speak directly to the reader.')">
+              <span class="refine-icon">💬</span>More Conversational
+            </button>
+            <button class="refine-btn" onclick="quickRefine('Add more data points, statistics, or specific examples throughout the article to increase credibility and authority.')">
+              <span class="refine-icon">📊</span>Add Data & Stats
+            </button>
+            <button class="refine-btn" onclick="quickRefine('Rewrite the FAQ section with 5 more specific, practical questions that a real user would search for.')">
+              <span class="refine-icon">❓</span>Better FAQs
+            </button>
+            <button class="refine-btn" onclick="quickRefine('Improve the conclusion section. Make it stronger with a clear takeaway and an actionable call to action.')">
+              <span class="refine-icon">🎯</span>Stronger Conclusion
+            </button>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 16px;">
+            <label>Custom refinement instruction</label>
+            <textarea id="custom-refine" placeholder="e.g. Expand the section on pricing to include more detail... / Add a comparison table... / Include more emotional trigger words..."></textarea>
+          </div>
+
+          <div class="btn-row">
+            <button class="btn btn-primary" onclick="customRefine()">Apply Refinement</button>
+            <button class="btn btn-secondary" onclick="goToStep(6)">Skip → Save & Export</button>
+          </div>
+
+          <div class="status-bar" id="refine-status" style="margin-top: 16px;">
+            <div class="spinner"></div>
+            <span>Applying refinement...</span>
+          </div>
+
+          <div class="tabs" id="refine-tabs" style="display:none; margin-top: 16px;">
+            <div class="tab active" onclick="switchTab('refine', 'preview')">Refined Preview</div>
+            <div class="tab" onclick="switchTab('refine', 'raw')">Raw Output</div>
+          </div>
+          <div class="article-viewer" id="refine-preview"></div>
+          <div class="output-box" id="refine-raw"></div>
+
+          <div class="btn-row" id="refine-actions" style="display:none">
+            <button class="btn btn-success" onclick="goToStep(6)">Use Refined Version → Save</button>
+            <button class="btn btn-secondary" onclick="keepOriginal()">Keep Original Version</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════ -->
+      <!-- STEP 6: Save & Export                 -->
+      <!-- ══════════════════════════════════════ -->
+      <div id="step-6" class="hidden">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon">💾</div>
+            <div>
+              <div class="card-title">Save & Export</div>
+              <div class="card-subtitle">Your article is ready — save it to your desktop</div>
+            </div>
+          </div>
+
+          <!-- Final meta summary -->
+          <div class="meta-grid" id="final-meta">
+            <div class="meta-pill">
+              <div class="meta-pill-label">Title Tag</div>
+              <div class="meta-pill-value" id="final-title-tag"></div>
+            </div>
+            <div class="meta-pill">
+              <div class="meta-pill-label">Title Tag Length</div>
+              <div class="meta-pill-value" id="final-title-len"></div>
+            </div>
+            <div class="meta-pill full">
+              <div class="meta-pill-label">Meta Description</div>
+              <div class="meta-pill-value" id="final-meta-desc"></div>
+            </div>
+          </div>
+
+          <div class="btn-row">
+            <button class="btn btn-primary" onclick="saveArticle()" id="save-btn">
+              💾 Save to Desktop (Markdown + JSON)
+            </button>
+          </div>
+
+          <div class="save-info" id="save-info">
+            <div style="font-weight: 600; color: var(--green);">✅ Article saved successfully!</div>
+            <div class="save-path" id="save-path-md"></div>
+            <div class="save-path" id="save-path-json"></div>
+          </div>
+        </div>
+
+        <!-- Pre-publish checklist -->
+        <div class="card" style="margin-top: 0;">
+          <div class="card-header">
+            <div class="card-icon">✅</div>
+            <div>
+              <div class="card-title">Pre-Publish Checklist</div>
+              <div class="card-subtitle">Complete these before publishing</div>
+            </div>
+          </div>
+          <div class="checklist">
+            <label class="check-item"><input type="checkbox"> Title tag is under 60 characters and contains primary keyword</label>
+            <label class="check-item"><input type="checkbox"> Meta description is 150–160 characters and is compelling</label>
+            <label class="check-item"><input type="checkbox"> Primary keyword appears in H1, first paragraph, 2+ headings, and conclusion</label>
+            <label class="check-item"><input type="checkbox"> No keyword stuffing — keywords read naturally</label>
+            <label class="check-item"><input type="checkbox"> Flesch-Kincaid score checked (target 50–60)</label>
+            <label class="check-item"><input type="checkbox"> Article is 800–2000 words</label>
+            <label class="check-item"><input type="checkbox"> Internal links added to related articles</label>
+            <label class="check-item"><input type="checkbox"> 1–2 external authority links added</label>
+            <label class="check-item"><input type="checkbox"> Relevant images added with descriptive alt text</label>
+            <label class="check-item"><input type="checkbox"> FAQs section included at the bottom</label>
+            <label class="check-item"><input type="checkbox"> Human expert reviewed for factual accuracy</label>
+          </div>
+        </div>
+
+        <!-- Final article preview -->
+        <div class="card" style="margin-top: 0;">
+          <div class="card-header">
+            <div class="card-icon">📄</div>
+            <div>
+              <div class="card-title">Final Article Preview</div>
+            </div>
+          </div>
+          <div class="article-viewer visible" id="final-article-preview"></div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script>
+// ─────────────────────────────────────────────
+// State
+// ─────────────────────────────────────────────
+const state = {
+  currentStep: 1,
+  context: {},
+  keywordsOutput: '',
+  briefOutput: '',
+  rawArticle: '',
+  sections: {}
+};
+
+const TOTAL_STEPS = 6;
+
+// ─────────────────────────────────────────────
+// Navigation
+// ─────────────────────────────────────────────
+function goToStep(n) {
+  // Hide all
+  for (let i = 1; i <= TOTAL_STEPS; i++) {
+    document.getElementById(`step-${i}`).classList.add('hidden');
+    const item = document.querySelector(`.step-item[data-step="${i}"]`);
+    item.classList.remove('active');
+    if (i < n) item.classList.add('completed');
+  }
+  document.getElementById(`step-${n}`).classList.remove('hidden');
+  document.querySelector(`.step-item[data-step="${n}"]`).classList.add('active');
+  state.currentStep = n;
+
+  const titles = [
+    '', 'Step 1: Enter Your Keyword', 'Step 2: Keyword Research',
+    'Step 3: Content Brief', 'Step 4: Generate Article',
+    'Step 5: Refine & Review', 'Step 6: Save & Export'
+  ];
+  const badges = [
+    '', 'Getting Started', 'LSI Keywords',
+    'Article Brief', 'Writing...', 'Refinement', 'Final Export'
+  ];
+  document.getElementById('topbar-title').textContent = titles[n];
+  document.getElementById('topbar-badge').textContent = badges[n];
+
+  const pct = Math.round((n / TOTAL_STEPS) * 100);
+  document.getElementById('progress-fill').style.width = pct + '%';
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ─────────────────────────────────────────────
+// Tab switching
+// ─────────────────────────────────────────────
+function switchTab(prefix, tab) {
+  const tabs = document.querySelectorAll(`#${prefix}-tabs .tab`);
+  tabs.forEach(t => t.classList.remove('active'));
+
+  const ids = {
+    kw: ['rendered', 'raw'],
+    brief: ['rendered', 'raw'],
+    article: ['preview', 'raw'],
+    refine: ['preview', 'raw'],
+  };
+
+  ids[prefix].forEach(id => {
+    const el = document.getElementById(`${prefix}-${id}`);
+    if (el) el.style.display = 'none';
+  });
+
+  event.target.classList.add('active');
+  const el = document.getElementById(`${prefix}-${tab}`);
+  if (el) el.style.display = 'block';
+}
+
+// ─────────────────────────────────────────────
+// Markdown renderer (minimal)
+// ─────────────────────────────────────────────
+function renderMarkdown(text) {
+  return text
+    .replace(/^#### (.+)$/gm, '<h4>$1</h4>')
+    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+    .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+    .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    .replace(/`(.+?)`/g, '<code>$1</code>')
+    .replace(/^\|(.+)\|$/gm, (match) => {
+      const cells = match.split('|').slice(1, -1);
+      const isHeader = cells[0] && cells[0].includes('---');
+      if (isHeader) return '';
+      const tag = 'td';
+      return '<tr>' + cells.map(c => `<${tag}>${c.trim()}</${tag}>`).join('') + '</tr>';
+    })
+    .replace(/(<tr>.*<\/tr>\n)+/gs, (m) => {
+      const rows = m.trim().split('\n');
+      const firstRow = rows[0].replace(/td/g, 'th');
+      const rest = rows.slice(1).join('\n');
+      return `<table>${firstRow}${rest}</table>`;
+    })
+    .replace(/^- (.+)$/gm, '<li>$1</li>')
+    .replace(/(<li>.*<\/li>\n)+/gs, m => `<ul>${m}</ul>`)
+    .replace(/^\d+\. (.+)$/gm, '<li>$1</li>')
+    .replace(/\n\n/g, '</p><p>')
+    .replace(/^(?!<[hup|li|table])(.+)$/gm, (m) => m ? m : '')
+    .split('\n').map(line => {
+      if (line && !line.startsWith('<')) return `<p>${line}</p>`;
+      return line;
+    }).join('\n');
+}
+
+// ─────────────────────────────────────────────
+// SSE Streaming helper
+// ─────────────────────────────────────────────
+async function streamToElement(url, payload, rawEl, renderedEl, onDone) {
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+  let full = '';
+
+  rawEl.textContent = '';
+  rawEl.classList.add('streaming');
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split('\n');
+    buffer = lines.pop();
+
+    for (const line of lines) {
+      if (line.startsWith('data: ')) {
+        const data = line.slice(6);
+        if (data === '[DONE]') {
+          rawEl.classList.remove('streaming');
+          if (onDone) onDone(full);
+          return;
+        }
+        try {
+          const parsed = JSON.parse(data);
+          full += parsed.text;
+          rawEl.textContent = full;
+          rawEl.scrollTop = rawEl.scrollHeight;
+          if (renderedEl) {
+            renderedEl.innerHTML = renderMarkdown(full);
+            renderedEl.scrollTop = renderedEl.scrollHeight;
+          }
+        } catch (e) {}
+      }
+    }
+  }
+  rawEl.classList.remove('streaming');
+  if (onDone) onDone(full);
+}
+
+// ─────────────────────────────────────────────
+// Step 2: Keyword Research
+// ─────────────────────────────────────────────
+function startKeywordResearch() {
+  const kw = document.getElementById('primary-keyword').value.trim();
+  if (!kw) { alert('Please enter a primary keyword first.'); return; }
+
+  state.context = {
+    primary_keyword: kw,
+    brand_name: document.getElementById('brand-name').value.trim(),
+    industry: document.getElementById('industry').value.trim() || 'General',
+    target_audience: document.getElementById('target-audience').value.trim() || 'General audience',
+    tone: document.getElementById('tone').value,
+  };
+
+  goToStep(2);
+  doKeywordResearch();
+}
+
+function doKeywordResearch() {
+  const status = document.getElementById('kw-status');
+  const rawEl = document.getElementById('kw-raw');
+  const renderedEl = document.getElementById('kw-rendered');
+  const tabs = document.getElementById('kw-tabs');
+  const actions = document.getElementById('kw-actions');
+
+  status.className = 'status-bar loading visible';
+  rawEl.classList.add('visible');
+  renderedEl.classList.add('visible');
+  tabs.style.display = 'flex';
+  actions.style.display = 'none';
+
+  streamToElement('/api/keywords', state.context, rawEl, renderedEl, (full) => {
+    state.keywordsOutput = full;
+    status.className = 'status-bar success visible';
+    status.innerHTML = '<span>✅ Keyword research complete</span>';
+    actions.style.display = 'flex';
+  });
+}
+
+function regenerateKeywords() { doKeywordResearch(); }
+
+// ─────────────────────────────────────────────
+// Step 3: Content Brief
+// ─────────────────────────────────────────────
+function generateBrief() {
+  goToStep(3);
+  doBrief();
+}
+
+function doBrief() {
+  const status = document.getElementById('brief-status');
+  const rawEl = document.getElementById('brief-raw');
+  const renderedEl = document.getElementById('brief-rendered');
+  const tabs = document.getElementById('brief-tabs');
+  const actions = document.getElementById('brief-actions');
+
+  status.className = 'status-bar loading visible';
+  rawEl.classList.add('visible');
+  renderedEl.classList.add('visible');
+  tabs.style.display = 'flex';
+  actions.style.display = 'none';
+
+  const payload = { ...state.context, keywords_output: state.keywordsOutput };
+
+  streamToElement('/api/brief', payload, rawEl, renderedEl, (full) => {
+    state.briefOutput = full;
+    status.className = 'status-bar success visible';
+    status.innerHTML = '<span>✅ Content brief ready</span>';
+    actions.style.display = 'block';
+  });
+}
+
+function regenerateBrief() { doBrief(); }
+
+// ─────────────────────────────────────────────
+// Step 4: Generate Article
+// ─────────────────────────────────────────────
+function generateArticle() {
+  goToStep(4);
+  doGenerateArticle();
+}
+
+function doGenerateArticle() {
+  const status = document.getElementById('article-status');
+  const rawEl = document.getElementById('article-raw');
+  const previewEl = document.getElementById('article-preview');
+  const tabs = document.getElementById('article-tabs');
+  const actions = document.getElementById('article-actions');
+  const metaSection = document.getElementById('article-meta');
+
+  status.className = 'status-bar loading visible';
+  rawEl.classList.add('visible');
+  tabs.style.display = 'none';
+  actions.style.display = 'none';
+  metaSection.classList.add('hidden');
+
+  const payload = {
+    ...state.context,
+    keywords_output: state.keywordsOutput,
+    brief_output: state.briefOutput,
+    user_notes: document.getElementById('user-notes').value.trim(),
+  };
+
+  streamToElement('/api/article', payload, rawEl, null, (full) => {
+    state.rawArticle = full;
+    status.className = 'status-bar success visible';
+    status.innerHTML = '<span>✅ Article generated successfully</span>';
+
+    // Parse and show preview
+    const sections = parseArticle(full);
+    state.sections = sections;
+
+    previewEl.innerHTML = renderMarkdown(sections.article_copy || '');
+    previewEl.classList.add('visible');
+
+    // Show meta
+    setMeta(sections);
+    metaSection.classList.remove('hidden');
+    tabs.style.display = 'flex';
+    actions.style.display = 'flex';
+  });
+}
+
+function regenerateArticle() { doGenerateArticle(); }
+
+function parseArticle(raw) {
+  function extract(text, start, end) {
+    try {
+      const s = text.indexOf(start) + start.length;
+      const e = text.indexOf(end, s);
+      return text.slice(s, e).trim();
+    } catch { return ''; }
+  }
+  return {
+    keywords: extract(raw, '---KEYWORDS---', '---TITLETAG---'),
+    title_tag: extract(raw, '---TITLETAG---', '---METADESC---'),
+    meta_desc: extract(raw, '---METADESC---', '---ARTICLETITLE---'),
+    article_title: extract(raw, '---ARTICLETITLE---', '---ARTICLECOPY---'),
+    article_copy: extract(raw, '---ARTICLECOPY---', '---FAQS---'),
+    faqs: extract(raw, '---FAQS---', '---END---'),
+  };
+}
+
+function setMeta(sections) {
+  const tl = sections.title_tag || '';
+  const md = sections.meta_desc || '';
+
+  document.getElementById('meta-title').textContent = tl || '—';
+  const tlLen = tl.length;
+  const tlEl = document.getElementById('meta-title-len');
+  tlEl.textContent = `${tlLen} characters ${tlLen <= 60 ? '✅' : '⚠️ Too long'}`;
+  tlEl.className = 'meta-pill-value ' + (tlLen <= 60 ? 'good' : 'warn');
+
+  document.getElementById('meta-desc').textContent = md || '—';
+  document.getElementById('meta-keywords').textContent = sections.keywords || '—';
+}
+
+// ─────────────────────────────────────────────
+// Step 5: Refine
+// ─────────────────────────────────────────────
+function quickRefine(instruction) {
+  document.getElementById('custom-refine').value = instruction;
+  customRefine();
+}
+
+function customRefine() {
+  const instruction = document.getElementById('custom-refine').value.trim();
+  if (!instruction) { alert('Please enter a refinement instruction.'); return; }
+
+  const status = document.getElementById('refine-status');
+  const rawEl = document.getElementById('refine-raw');
+  const previewEl = document.getElementById('refine-preview');
+  const tabs = document.getElementById('refine-tabs');
+  const actions = document.getElementById('refine-actions');
+
+  status.className = 'status-bar loading visible';
+  rawEl.classList.add('visible');
+  tabs.style.display = 'none';
+  actions.style.display = 'none';
+
+  const payload = {
+    current_article: state.rawArticle,
+    refinement: instruction,
+    primary_keyword: state.context.primary_keyword,
+  };
+
+  streamToElement('/api/refine', payload, rawEl, null, (full) => {
+    state.refinedArticle = full;
+    const sections = parseArticle(full);
+    previewEl.innerHTML = renderMarkdown(sections.article_copy || full);
+    previewEl.classList.add('visible');
+
+    status.className = 'status-bar success visible';
+    status.innerHTML = '<span>✅ Refinement applied</span>';
+    tabs.style.display = 'flex';
+    actions.style.display = 'flex';
+  });
+}
+
+function keepOriginal() {
+  state.refinedArticle = null;
+  goToStep(6);
+  setupFinalStep();
+}
+
+// ─────────────────────────────────────────────
+// Step 6: Save
+// ─────────────────────────────────────────────
+function setupFinalStep() {
+  const finalArticle = state.refinedArticle || state.rawArticle;
+  const sections = parseArticle(finalArticle);
+  state.sections = sections;
+  state.rawArticle = finalArticle;
+
+  // Meta
+  const tl = sections.title_tag || '';
+  document.getElementById('final-title-tag').textContent = tl || '—';
+  const tlLen = tl.length;
+  const tlEl = document.getElementById('final-title-len');
+  tlEl.textContent = `${tlLen} chars ${tlLen <= 60 ? '✅' : '⚠️ Too long!'}`;
+  tlEl.className = 'meta-pill-value ' + (tlLen <= 60 ? 'good' : 'warn');
+  document.getElementById('final-meta-desc').textContent = sections.meta_desc || '—';
+
+  // Preview
+  const preview = document.getElementById('final-article-preview');
+  preview.innerHTML = renderMarkdown(sections.article_copy || '');
+}
+
+function goToStep(n) {
+  for (let i = 1; i <= TOTAL_STEPS; i++) {
+    document.getElementById(`step-${i}`).classList.add('hidden');
+    const item = document.querySelector(`.step-item[data-step="${i}"]`);
+    item.classList.remove('active');
+    if (i < n) item.classList.add('completed');
+  }
+  document.getElementById(`step-${n}`).classList.remove('hidden');
+  document.querySelector(`.step-item[data-step="${n}"]`).classList.add('active');
+  state.currentStep = n;
+
+  const titles = ['','Step 1: Enter Your Keyword','Step 2: Keyword Research','Step 3: Content Brief','Step 4: Generate Article','Step 5: Refine & Review','Step 6: Save & Export'];
+  const badges = ['','Getting Started','LSI Keywords','Article Brief','Writing...','Refinement','Final Export'];
+  document.getElementById('topbar-title').textContent = titles[n];
+  document.getElementById('topbar-badge').textContent = badges[n];
+  document.getElementById('progress-fill').style.width = Math.round((n / TOTAL_STEPS) * 100) + '%';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  if (n === 6) setupFinalStep();
+}
+
+async function saveArticle() {
+  const btn = document.getElementById('save-btn');
+  btn.disabled = true;
+  btn.textContent = 'Saving...';
+
+  const res = await fetch('/api/save', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      raw_article: state.rawArticle,
+      context: {
+        ...state.context,
+        keywords_output: state.keywordsOutput,
+        brief_output: state.briefOutput,
+      }
+    })
+  });
+
+  const data = await res.json();
+  if (data.success) {
+    const saveInfo = document.getElementById('save-info');
+    document.getElementById('save-path-md').textContent = '📄 Markdown: ' + data.md_path;
+    document.getElementById('save-path-json').textContent = '📋 JSON: ' + data.json_path;
+    saveInfo.classList.add('visible');
+    btn.textContent = '✅ Saved!';
+    btn.className = 'btn btn-success';
+  } else {
+    btn.textContent = '❌ Save failed — check console';
+    btn.disabled = false;
+  }
+}
+</script>
+</body>
+</html>
