@@ -12,8 +12,10 @@ from flask import Flask, render_template, request, Response, jsonify, stream_wit
 import anthropic
 
 app = Flask(__name__)
-client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
 MODEL = "claude-sonnet-4-6"
+
+def get_client():
+    return anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
 
 # ─────────────────────────────────────────────
 # Best Practice Guides (from your PDFs)
@@ -201,7 +203,7 @@ Note: Search volume estimates are indicative — verify with Google Keyword Plan
 """
 
     def generate():
-        with client.messages.stream(
+        with get_client().messages.stream(
             model=MODEL,
             max_tokens=2000,
             messages=[{"role": "user", "content": prompt}]
@@ -269,7 +271,7 @@ FAQ SUGGESTIONS (5 questions a real reader would ask):
 """
 
     def generate():
-        with client.messages.stream(
+        with get_client().messages.stream(
             model=MODEL,
             max_tokens=1500,
             messages=[{"role": "user", "content": prompt}]
@@ -337,7 +339,7 @@ CRITICAL REQUIREMENTS CHECKLIST:
 """
 
     def generate():
-        with client.messages.stream(
+        with get_client().messages.stream(
             model=MODEL,
             max_tokens=4096,
             system=system,
@@ -376,7 +378,7 @@ Output the complete refined article in the same format.
 """
 
     def generate():
-        with client.messages.stream(
+        with get_client().messages.stream(
             model=MODEL,
             max_tokens=4096,
             messages=[{"role": "user", "content": prompt}]
